@@ -20,6 +20,8 @@ var simbolo_inicial = null;
 var G = {};
 var G_raw = [];
 
+var estados = [];
+
 onload = function () {
 	var txt_produccion = document.getElementById('txt_produccion');
 
@@ -84,6 +86,10 @@ function inicializar_simbolos() {
 
 	alfabeto = [];
 
+	if (terminales.indexOf('$') < 0) {
+		terminales.push('$');
+	}
+
 	terminales.forEach(function (x) {
 		alfabeto.push(x);
 	});
@@ -97,6 +103,26 @@ function inicializar_simbolos() {
 	sessionStorage.setItem('terminales', terminales.join(' '));
 	sessionStorage.setItem('no_terminales', no_terminales.join(' '));
 	sessionStorage.setItem('simbolo_inicial', simbolo_inicial);
+}
+
+function insertar_produccion_tabla(X, Y) {
+	if (!G[X]) {
+		G[X] = [];
+	}
+
+	G[X].push(Y.split(''));
+
+	G_raw.push(X + '@' + Y);
+
+	console.log('Gramática', G);
+
+	var tbl_producciones = document.getElementById('tbl_producciones');
+
+	var tr = document.createElement('tr');
+
+	tr.innerHTML = '<td>' + X + ' &lt;- ' + Y.split('').join(' ') + '</td>';
+
+	tbl_producciones.appendChild(tr);
 }
 
 function insertar_produccion() {
@@ -140,23 +166,11 @@ function insertar_produccion() {
 		return;
 	}
 
-	if (!G[X]) {
-		G[X] = [];
+	if (G_raw.length === 0) {
+		insertar_produccion_tabla('X', simbolo_inicial);
 	}
 
-	G[X].push(Y.split(''));
-
-	G_raw.push(X + '@' + Y);
-
-	console.log('Gramática', G);
-
-	var tbl_producciones = document.getElementById('tbl_producciones');
-
-	var tr = document.createElement('tr');
-
-	tr.innerHTML = '<td>' + X + ' &lt;- ' + Y.split('').join(' ') + '</td>';
-
-	tbl_producciones.appendChild(tr);
+	insertar_produccion_tabla(X, Y);
 
 	txt_produccion.value = '';
 
@@ -170,5 +184,252 @@ function generarTablaAnalisis() {
 
 	analisis.hidden = false;
 
-	
+	var T = generar_tabla_analisis();
+
+	console.log(T);
 };
+
+function obtener_elementos(X, marcados) {
+	marcados = marcados || [];
+
+	var no_marcado = marcados.indexOf(X) < 0;
+
+	marcados.push(X);
+
+	var elementos = [];
+
+	if (no_marcado && no_terminales.indexOf(X) >= 0) {
+		Ys = G[X];
+		
+		Ys.forEach(function (Y) {
+			elementos.push(X + '@.' + Y.join(''));
+
+			if (no_terminales.indexOf(Y[0]) >= 0) {
+				var sub = obtener_elementos(Y[0], marcados);
+
+				console.log('Sub', sub);
+
+				sub.forEach(function (x) {
+					elementos.push(x);
+				});
+			}
+		});
+	}
+
+	console.log("Elementos", elementos);
+
+	return elementos;
+}
+
+function recorrer_punto(Y) {
+	var j = Y.indexOf('.');
+
+	// console.log('J', j);
+
+	if (j >= 0) {
+		Y.splice(j, 1);
+	}
+
+	Y.splice(j + 1, 0, '.');
+}
+
+function obtener_simbolo_punto(Y) {
+	// console.log('YY', Y);
+	for (var i = 0; i < (Y.length - 1); i++) {
+		if (Y[i] === '.') {
+			return Y[i + 1];
+		}
+	}
+
+	return '#';
+}
+
+var contador = -1;
+
+function conjunto_canonico(X, Y) {
+	recorrer_punto(Y);
+
+	var e = null;
+	estados.forEach(function (z, i) {
+		if (z.id === X + '@' + Y.join('')) {
+			console.log(z, i);
+			e = i;
+			return;
+		}
+	});
+
+	if (e) {
+		return estados[e];
+	}
+
+	contador += 1;
+
+	e = contador;
+
+	var elementos = obtener_elementos(Y[Y.indexOf('.') + 1]);
+
+	estados.push({
+		indice: contador,
+		id: X + '@' + Y.join(''),
+		sub: elementos,
+		subc: []
+	});
+
+	var s = obtener_simbolo_punto(Y);
+
+	var aux1 = X + '@' + Y.join('');
+	var aux2 = 'X@' + simbolo_inicial + '.';
+
+	if (s === '#' && aux1 === aux2) {
+		s = '$';
+	}
+
+	var C = conjunto_canonico(X, Y);
+
+	console.log('C', C);
+
+	estados[e].subc.push({
+		simbolo: s,
+		estado: C.indice,
+		cadena: X + '@' + Y.join('')
+	});
+
+	estados[e].sub.forEach(function (z) {
+		var aux = z.split('@');
+
+		var Xp = aux[0];
+		var Yp = aux[1].split('');
+
+		// recorrer_punto(Yp);
+
+		// console.log('Xp', Xp);
+		// console.log('Yp', Yp);
+
+		s = obtener_simbolo_punto(Yp);
+
+		C = conjunto_canonico(Xp, Yp);
+
+		console.log('C', C);
+
+		estados[e].subc.push({
+			simbolo: s,
+			estado: C.indice,
+			cadena: Xp + '@' + Yp.join('')
+		});
+	});
+
+	estados[e].subc.forEach(function (transicion) {
+		if (transicion.simbolo === '$') {
+			transicion.valor = 'aceptar';
+			transicion.accion = 'aceptar';
+			return;
+		}
+
+		if (transicion.simbolo === '#') {
+			var cadena = transicion.cadena.substr(0, transicion.cadena.length - 1);
+
+			var j = -1;
+
+			G_raw.forEach(function (c, k) {
+				if (c === cadena) {
+					j = k;
+					return;
+				}
+			})
+
+			transicion.valor = 'r' + j;
+			transicion.accion = 'reducir';
+			return;
+		}
+
+		if (terminales.indexOf(transicion.simbolo) >= 0) {
+			transicion.valor = 'd' + transicion.estado;
+			transicion.accion = 'desplazar';
+			return;
+		}
+
+		transicion.valor = transicion.estado;
+		transicion.accion = 'ir_a';
+	});
+
+	return estados[e];
+}
+
+function iniciar_tabla_analisis() {
+	var tbl_analisis = document.getElementById('tbl_analisis');
+
+	tbl_analisis.innerHTML = "";
+
+	var tr = document.createElement('tr');
+
+	tr.className = 'active';
+
+	tr.innerHTML += '<th rowspan="2">Estado</th>';
+	tr.innerHTML += '<th colspan="' + (terminales.length + 1) + '">Acciones</th>';
+	tr.innerHTML += '<th colspan="' + no_terminales.length + '">IrA</th>';
+
+	tbl_analisis.appendChild(tr);
+
+	tr = document.createElement('tr');
+
+	tr.className = 'warning';
+
+	alfabeto.forEach(function (x) {
+		tr.innerHTML += '<th>' + x + '</th>';
+	});
+
+	tbl_analisis.appendChild(tr);
+}
+
+function agregar_estado_tabla(estado) {
+	console.log('Estado', estado);
+
+	var tbl_analisis = document.getElementById('tbl_analisis');
+
+	tr = document.createElement('tr');
+
+	tr.innerHTML += '<td>' + estado.indice + '</td>';
+
+	terminales.forEach(function (x) {
+		var marcado = false;
+		estado.subc.forEach(function (transicion) {
+			if (transicion.simbolo === '#' || transicion.simbolo === x) {
+				tr.innerHTML += '<td>' + transicion.valor + '</td>';
+				marcado = true;
+				return;
+			}
+		});
+		if (!marcado) {
+			tr.innerHTML += '<td>*</td>';
+		}
+	});
+
+	no_terminales.forEach(function (x) {
+		var marcado = false;
+		estado.subc.forEach(function (transicion) {
+			if (transicion.simbolo === x) {
+				tr.innerHTML += '<td>' + transicion.valor + '</td>';
+				marcado = true;
+				return;
+			}
+		});
+		if (!marcado) {
+			tr.innerHTML += '<td>*</td>';
+		}
+	});
+
+	tbl_analisis.appendChild(tr);
+}
+
+function generar_tabla_analisis() {
+	estados = [];
+	contador = -1;
+
+	conjunto_canonico('X', simbolo_inicial.split(''), []);
+
+	iniciar_tabla_analisis();
+
+	estados.forEach(function (estado) {
+		agregar_estado_tabla(estado);
+	});
+}
