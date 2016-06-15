@@ -21,6 +21,14 @@ var G = {};
 var G_raw = [];
 
 onload = function () {
+	var txt_produccion = document.getElementById('txt_produccion');
+
+	txt_produccion.onkeydown = function (e) {
+		if (e.keyCode === 13) {
+			insertar_produccion();
+		}
+	};
+
 	var txt_terminales = document.getElementById('txt_terminales');
 	var txt_no_terminales = document.getElementById('txt_no_terminales');
 	var txt_simbolo_inicial = document.getElementById('txt_simbolo_inicial');
@@ -161,4 +169,6 @@ function generarTablaAnalisis() {
 	var analisis = document.getElementById('analisis');
 
 	analisis.hidden = false;
+
+	
 };
