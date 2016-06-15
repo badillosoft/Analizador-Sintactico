@@ -562,8 +562,8 @@ function Evaluar(w, T, G) {
 
 				q.push('*');
 
-				insertar_decicion(q, w, 'ir a ' + j);
-				console.log('PILA', p, 'CADENA', w, 'ir a ' + j);
+				insertar_decicion(p, w, 'd' + j);
+				console.log('PILA', p, 'CADENA', w, 'd' + j);
 
 				p.push(j);
 				
@@ -594,8 +594,8 @@ function Evaluar(w, T, G) {
 				return 'inválida';
 			}
 
-			insertar_decicion(p, w, 'ir a ' + j);
-			console.log('PILA', p, 'CADENA', w, 'ir a ' + j);
+			insertar_decicion(p, w, 'd' + j);
+			console.log('PILA', p, 'CADENA', w, 'd' + j);
 			
 			p.push(j);
 			
