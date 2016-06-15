@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<meta charset="utf-8">
+		<title>Analizador Sintáctico LR(0)</title>
+
+		<!-- Latest compiled and minified CSS -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css"></link>
+
+		<!-- Optional theme -->
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css"/>
+
+		<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+
+		<!-- Latest compiled and minified JavaScript -->
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+		<script src="app.js"></script>
+
+		<style>
+			.spacer {
+				margin: 50px 0px 50px 0px;
+			}
+		</style>
+	</head>
+	<body>
+		<div class="container">
+			<h1 class="spacer">Analizador Sintáctico LR(0)</h1>
+
+			<div class="form-group">
+				<label for="txt_terminales">Símbolos Terminales</label>
+				<input class="form-control" id="txt_terminales" type="text"
+					placeholder="Escriba el conjunto de Símbolos Terminales. Ejemplo: a b c"/>
+			</div>
+			<div class="form-group">
+				<label for="txt_no_terminales">Símbolos No-Terminales</label>
+				<input class="form-control" id="txt_no_terminales" type="text"
+					placeholder="Escriba el conjunto de Símbolos No-Terminales. Ejemplo: S A B C"/>
+			</div>
+		
+			<div class="form-group">
+				<label for="txt_simbolo_inicial">Símbolo Inicial</label>
+				<input class="form-control" id="txt_simbolo_inicial" type="text"
+					placeholder="Escriba el Símbolo Inicial. Ejemplo: S"/>
+			</div>
+
+			<blockquote>
+				A continuación se ingresarán las producciones, cada
+				producción será de la forma <strong>X &lt;- Y</strong>
+				donde <strong>X</strong> debe ser un símbolo
+				<em>No-Terminal</em> y <strong>Y</strong> debe ser
+				una cadena de símbolos <em>Terminales</em> y <em>No-Terminales</em>.
+				<strong>Ejemplo: S &lt;- BAa</strong>
+			</blockquote>
+
+			<div class="form-group">
+				<label for="txt_produccion">Agregar Producción</label>
+				<div class="input-group">
+					<input class="form-control" id="txt_produccion" type="text"
+						placeholder="Escriba una producción. Ejemplo: S &lt;- BAa"/>
+					<span class="input-group-btn">
+						<button class="btn btn-primary" type="button"
+							onclick="insertar_produccion()">Agregar</button>
+					</span>
+				</div>
+			</div>
+
+			<div class="spacer" id="producciones" hidden>
+				<table id="tbl_producciones" class="table table-striped table-bordered">
+					<tr class="secondary">
+						<th>Producción</th>
+					</tr>
+				</table>
+
+				<button class="btn btn-success"
+					onclick="generarTablaAnalisis()">Generar Tabla de Análisis</button>
+			</div>
+
+			<div id="analisis" hidden>
+				<div class="spacer" id="div_tabla_analisis">
+					<label for="tbl_analisis">Tabla de Análisis</label>
+					<table id="tbl_analisis" class="table table-striped table-bordered">
+						<tr class="secondary">
+							<th rowspan="2">Estado</th>
+							<th colspan="6">Acciones</th>
+							<th colspan="4">IrA</th>
+						</tr>
+						<tr class="warning">
+							<th>a</th>
+							<th>b</th>
+							<th>c</th>
+							<th>d</th>
+							<th>e</th>
+							<th>$</th>
+							<th>S</th>
+							<th>A</th>
+							<th>B</th>
+							<th>C</th>
+						</tr>
+					</table>
+				</div>
+
+				<blockquote>
+					A continuación se evaluará una cadena para determinar si es
+					válida. <strong>Ejemplo: e d b c a</strong> 
+				</blockquote>
+
+				<div class="form-group">
+					<label for="txt_cadena">Agregar Producción</label>
+					<div class="input-group">
+						<input class="form-control" id="txt_cadena" type="text"
+							placeholder="Escriba una producción. Ejemplo: S@BAa"/>
+						<span class="input-group-btn">
+							<button class="btn btn-info" type="button"
+								onclick="evaluar_cadena()">Evaluar</button>
+						</span>
+					</div>
+				</div>
+
+				<div class="spacer" id="div_tabla_decisiones">
+					<label for="tbl_decisiones">Tabla de Decisiones</label>
+					<table id="tbl_decisiones" class="table table-striped table-bordered">
+						<tr class="secondary">
+							<th>Pila</th>
+							<th>Cadena de Entrada</th>
+							<th>Acción</th>
+						</tr>
+					</table>
+				</div>
+			</div>
+		</div>
+
+
+
+	</body>
+</html>
