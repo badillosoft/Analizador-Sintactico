@@ -33,6 +33,14 @@ onload = function () {
 		}
 	};
 
+	var txt_cadena = document.getElementById('txt_cadena');
+
+	txt_cadena.onkeydown = function (e) {
+		if (e.keyCode === 13) {
+			evaluar_cadena();
+		}
+	};
+
 	var txt_terminales = document.getElementById('txt_terminales');
 	var txt_no_terminales = document.getElementById('txt_no_terminales');
 	var txt_simbolo_inicial = document.getElementById('txt_simbolo_inicial');
@@ -360,7 +368,7 @@ function conjunto_canonico(X, Y) {
 function iniciar_tabla_analisis() {
 	var tbl_analisis = document.getElementById('tbl_analisis');
 
-	tbl_analisis.innerHTML = "";
+	var thead = document.createElement('thead');
 
 	var tr = document.createElement('tr');
 
@@ -370,7 +378,7 @@ function iniciar_tabla_analisis() {
 	tr.innerHTML += '<th colspan="' + (terminales.length + 1) + '">Acciones</th>';
 	tr.innerHTML += '<th colspan="' + no_terminales.length + '">IrA</th>';
 
-	tbl_analisis.appendChild(tr);
+	thead.appendChild(tr);
 
 	tr = document.createElement('tr');
 
@@ -380,13 +388,21 @@ function iniciar_tabla_analisis() {
 		tr.innerHTML += '<th>' + x + '</th>';
 	});
 
-	tbl_analisis.appendChild(tr);
+	thead.appendChild(tr);
+
+	tbl_analisis.appendChild(thead);
+
+	var tbody = document.createElement('tbody');
+
+	tbody.id = 'tbl_analisis_body';
+
+	tbl_analisis.appendChild(tbody);
 }
 
 function agregar_estado_tabla(estado) {
 	console.log('Estado', estado);
 
-	var tbl_analisis = document.getElementById('tbl_analisis');
+	var tbl_analisis = document.getElementById('tbl_analisis_body');
 
 	tr = document.createElement('tr');
 
@@ -493,10 +509,10 @@ function Evaluar(w, T, G) {
 			
 				var n = a.valor;
 				
-				p.push(n);
-
 				insertar_decicion(p, w, 'd' + n);
 				console.log('PILA', p, 'CADENA', w, 'd' + n);
+
+				p.push(n);
 				
 				w.splice(0, 1); // Removemos el primer elemento
 				
@@ -516,10 +532,15 @@ function Evaluar(w, T, G) {
 				var Y = aux[1].split('');
 
 				console.log('X', X, 'Y', Y);
+
+				var d = 'r' + n + ' ( ' + X + ' &lt;- ' + Y.join(' ') + ' )';
+
+				insertar_decicion(p, w, d);
+				console.log('PILA', p, 'CADENA', w, d);
 				
 				var m = Y.length;
 				
-				p = p.slice(0, m);
+				p = p.slice(0, p.length - m);
 				
 				e = p[p.length - 1];
 
@@ -527,14 +548,22 @@ function Evaluar(w, T, G) {
 
 				var j = T[e].IrA[X];
 
-				if (j < 0) {
+				if (j === null || j < 0) {
 					insertar_decicion(p, w, 'error');
 					console.log('PILA', p, 'CADENA', w, 'error');
 					return 'inválida';
 				}
 				
-				insertar_decicion(p, w, 'r' + j);
-				console.log('PILA', p, 'CADENA', w, 'r' + j);
+				var q = [];
+
+				p.forEach(function (o) {
+					q.push(o);
+				});
+
+				q.push('*');
+
+				insertar_decicion(q, w, 'ir a ' + j);
+				console.log('PILA', p, 'CADENA', w, 'ir a ' + j);
 
 				p.push(j);
 				
@@ -559,14 +588,14 @@ function Evaluar(w, T, G) {
 		
 			var j = T[e].IrA[x];
 				
-			if (j < 0) {
+			if (j === null || j < 0) {
 				insertar_decicion(p, w, 'error');
 				console.log('PILA', p, 'CADENA', w, 'error');
 				return 'inválida';
 			}
 
-			insertar_decicion(p, w, 'd' + j);
-			console.log('PILA', p, 'CADENA', w, 'd' + j);
+			insertar_decicion(p, w, 'ir a ' + j);
+			console.log('PILA', p, 'CADENA', w, 'ir a ' + j);
 			
 			p.push(j);
 			
@@ -576,6 +605,7 @@ function Evaluar(w, T, G) {
 			
 		}
 		
+		insertar_decicion(p, w, 'error');
 		console.log('PILA', p, 'CADENA', w, 'error');
 		return 'inválida';
 		
@@ -583,9 +613,13 @@ function Evaluar(w, T, G) {
 }
 
 function evaluar_cadena() {
+	var tbl_decisiones = document.getElementById('tbl_decisiones');
+
+	tbl_decisiones.innerHTML = "";
+
 	var txt_cadena = document.getElementById('txt_cadena');
 
-	var w = txt_cadena.value.replace(/\s/g, '').split('');
+	var w = (txt_cadena.value + "$").replace(/\s/g, '').split('');
 
 	var resultado = Evaluar(w, T, G);
 
