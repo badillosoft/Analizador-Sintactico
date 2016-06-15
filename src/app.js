@@ -22,6 +22,8 @@ var G_raw = [];
 
 var estados = [];
 
+var T = {};
+
 onload = function () {
 	var txt_produccion = document.getElementById('txt_produccion');
 
@@ -86,8 +88,8 @@ function inicializar_simbolos() {
 
 	alfabeto = [];
 
-	if (terminales.indexOf('$') < 0) {
-		terminales.push('$');
+	if (terminales.indexOf("$") < 0) {
+		terminales.push("$");
 	}
 
 	terminales.forEach(function (x) {
@@ -281,7 +283,7 @@ function conjunto_canonico(X, Y) {
 	var aux2 = 'X@' + simbolo_inicial + '.';
 
 	if (s === '#' && aux1 === aux2) {
-		s = '$';
+		s = "$";
 	}
 
 	var C = conjunto_canonico(X, Y);
@@ -319,7 +321,7 @@ function conjunto_canonico(X, Y) {
 	});
 
 	estados[e].subc.forEach(function (transicion) {
-		if (transicion.simbolo === '$') {
+		if (transicion.simbolo === "$") {
 			transicion.valor = 'aceptar';
 			transicion.accion = 'aceptar';
 			return;
@@ -390,16 +392,29 @@ function agregar_estado_tabla(estado) {
 
 	tr.innerHTML += '<td>' + estado.indice + '</td>';
 
+	T[estado.indice] = {
+		Accion: {},
+		IrA: {}
+	};
+
 	terminales.forEach(function (x) {
 		var marcado = false;
 		estado.subc.forEach(function (transicion) {
 			if (transicion.simbolo === '#' || transicion.simbolo === x) {
+				T[estado.indice].Accion[x] = {
+					tipo: transicion.accion,
+					valor: Number(transicion.valor.substr(1))
+				};
 				tr.innerHTML += '<td>' + transicion.valor + '</td>';
 				marcado = true;
 				return;
 			}
 		});
 		if (!marcado) {
+			T[estado.indice].Accion[x] = {
+				tipo: 'error',
+				valor: -1
+			};
 			tr.innerHTML += '<td>*</td>';
 		}
 	});
@@ -408,12 +423,14 @@ function agregar_estado_tabla(estado) {
 		var marcado = false;
 		estado.subc.forEach(function (transicion) {
 			if (transicion.simbolo === x) {
+				T[estado.indice].IrA[x] = transicion.valor;
 				tr.innerHTML += '<td>' + transicion.valor + '</td>';
 				marcado = true;
 				return;
 			}
 		});
 		if (!marcado) {
+			T[estado.indice].IrA[x] = null;
 			tr.innerHTML += '<td>*</td>';
 		}
 	});
@@ -425,6 +442,8 @@ function generar_tabla_analisis() {
 	estados = [];
 	contador = -1;
 
+	T = {};
+
 	conjunto_canonico('X', simbolo_inicial.split(''), []);
 
 	iniciar_tabla_analisis();
@@ -432,4 +451,143 @@ function generar_tabla_analisis() {
 	estados.forEach(function (estado) {
 		agregar_estado_tabla(estado);
 	});
+
+	console.log('T', T);
+}
+
+function insertar_decicion(p, w, d) {
+	var tbl_decisiones = document.getElementById('tbl_decisiones');
+
+	var tr = document.createElement('tr');
+
+	var aux = [p.join(' '), w.join(' '), d];
+
+	aux.forEach(function (x) {
+		var td = document.createElement('td');
+		td.innerHTML = x;
+		tr.appendChild(td);
+	});
+
+	tbl_decisiones.appendChild(tr);
+}
+
+function Evaluar(w, T, G) {
+	var p = [0];
+	
+	var e = 0;
+	
+	while (true) { // marcador
+
+		var x = w[0] || '#'; // # representa al símbolo vacío
+
+		console.log('Pila', p, 'Cadena', w, 'Accion', T[e]);
+		console.log('Te', e, T[e], x);
+		
+		if (terminales.indexOf(x) >= 0) {
+		
+			var a = T[e].Accion[x];
+			
+			console.log('Accion:', a);
+
+			if (a.tipo == 'desplazar') {
+			
+				var n = a.valor;
+				
+				p.push(n);
+
+				insertar_decicion(p, w, 'd' + n);
+				console.log('PILA', p, 'CADENA', w, 'd' + n);
+				
+				w.splice(0, 1); // Removemos el primer elemento
+				
+				e = n;
+				
+				continue; // Regresamos al marcador
+				
+			}
+			
+			if (a.tipo == 'reducir') {
+			
+				var n = a.valor;
+				
+				var aux = G_raw[n].split('@');
+
+				var X = aux[0];
+				var Y = aux[1].split('');
+
+				console.log('X', X, 'Y', Y);
+				
+				var m = Y.length;
+				
+				p = p.slice(0, m);
+				
+				e = p[p.length - 1];
+
+				console.log('T', T[e], T[e].IrA[X]);
+
+				var j = T[e].IrA[X];
+
+				if (j < 0) {
+					insertar_decicion(p, w, 'error');
+					console.log('PILA', p, 'CADENA', w, 'error');
+					return 'inválida';
+				}
+				
+				insertar_decicion(p, w, 'r' + j);
+				console.log('PILA', p, 'CADENA', w, 'r' + j);
+
+				p.push(j);
+				
+				e = j;
+				
+				continue;
+			}
+			
+			if (a.tipo == 'aceptar') {
+				insertar_decicion(p, w, 'aceptar');
+				console.log('PILA', p, 'CADENA', w, 'aceptar');
+				return 'válida';
+			}
+			
+			insertar_decicion(p, w, 'error');
+			console.log('PILA', p, 'CADENA', w, 'error');
+			return 'inválida';
+			
+		}
+		
+		if (no_terminales.indexOf(x) >= 0) {
+		
+			var j = T[e].IrA[x];
+				
+			if (j < 0) {
+				insertar_decicion(p, w, 'error');
+				console.log('PILA', p, 'CADENA', w, 'error');
+				return 'inválida';
+			}
+
+			insertar_decicion(p, w, 'd' + j);
+			console.log('PILA', p, 'CADENA', w, 'd' + j);
+			
+			p.push(j);
+			
+			e = j;
+			
+			continue;
+			
+		}
+		
+		console.log('PILA', p, 'CADENA', w, 'error');
+		return 'inválida';
+		
+	}
+}
+
+function evaluar_cadena() {
+	var txt_cadena = document.getElementById('txt_cadena');
+
+	var w = txt_cadena.value.replace(/\s/g, '').split('');
+
+	var resultado = Evaluar(w, T, G);
+
+	console.log('Resultado', resultado);
 }
