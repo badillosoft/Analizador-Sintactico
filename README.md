@@ -4,7 +4,8 @@
 
 <center>
 **INSTITUTO POLITÉCNICO NACIONAL**
-**Centro de Innovación y Desarrollo Tecnológico en Cómputo**
+
+**Centro de Innovación y Desarrollo Tecnológico en Cómputo**
 
 <br><br>
 
@@ -92,21 +93,27 @@ El análisis ascendente lineal más utilizado es el algoritmo de <i>desplazami
 Algunas diferencias entre los algoritmos son:
 
 <ul>
-<li>El método <i>LR(1)</i> genera la tabla para cualquier gramática <i>LR(1)</i>, pero genera tablas muy grandes.</li><li>El método <i>SLR</i> genera tablas muy compactas pero no puede aplicarse a todas las gramáticas <i>LR(1)</i>.</li><li>El método <i>LALR</i> genera tablas compactas y puede aplicarse a la mayoría de gramáticas <i>LR(1)</i>.</li>
+<li>El método <i>LR(1)</i> genera la tabla para cualquier gramática <i>LR(1)</i>, pero genera tablas muy grandes.</li>
+<li>El método <i>SLR</i> genera tablas muy compactas pero no puede aplicarse a todas las gramáticas <i>LR(1)</i>.</li>
+<li>El método <i>LALR</i> genera tablas compactas y puede aplicarse a la mayoría de gramáticas <i>LR(1)</i>.</li>
 </ul>
 
 Se utilizan las siguientes acciones básicas para construir la tabla:
 
 <ul>
-<li><b>Desplazar</b>: consiste en consumir un token de la cadena de entrada.</li><li><b>Reducir</b>: consiste en sustituir en la pila los símbolos de una parte derecha de una regla por su parte izquierda.</li>
+<li><b>Desplazar</b>: consiste en consumir un token de la cadena de entrada.</li>
+<li><b>Reducir</b>: consiste en sustituir en la pila los símbolos de una parte derecha de una regla por su parte izquierda.</li>
 <li><b>Aceptar</b>: Se acepta la cadena como válida.</li>
-<li><b>Error</b>: Se invalida la cadena, este es por defecto cuando no ocurre ninguna acción.</li></ul>
+<li><b>Error</b>: Se invalida la cadena, este es por defecto cuando no ocurre ninguna acción.</li>
+</ul>
 
 La tabla se compone de las siguientes columnas:
 
 <ul>
 <li><b>Estado</b>: indica un estado diferente para cada fila.</li>
-<li><b>Acciones</b>: para cada símbolo terminal y $.</li><li><b>IrA</b>: para cada símbolo no terminal.</li></ul>
+<li><b>Acciones</b>: para cada símbolo terminal y $.</li>
+<li><b>IrA</b>: para cada símbolo no terminal.</li>
+</ul>
 </div>
 
 <div style="page-break-after: always;"></div>
@@ -669,7 +676,13 @@ function Conjunto_Elementos(G) {
 }
 ~~~
 
+El programa puede ser consultado en:
 
+https://rawgit.com/badillosoft/Analizador-Sintactico/master/src/index.html
+
+Y el código fuente está disponible en:
+
+https://github.com/badillosoft/Analizador-Sintactico
 
 <div style="page-break-after: always;"></div>
 
@@ -683,5 +696,10 @@ function Conjunto_Elementos(G) {
 
 <br><br>
 
-1. **Fundamentals of the Theory of Computation**, _R. Greenlaw, H. J. Hoover, Morgan Kaufmann_, Publishers, 1998.2. **Lenguajes Formales y Teoría de la Computación**, _Martin C. John_, McGrawHill, 3a. Edición. 2011.
-3. **Matemática Discreta y sus Aplicaciones**, _Rosen H. Kenneth_, McGrawHill, 5a. Edición. 2012.4. **Formal Development of Programs and Proofs**, _E. W. Dijkstra_ (editor), Addison-Wesley Publishing Company, 1990.5. **Teoría de Autómatas: Lenguajes y Computación**, _E.Hopcroft John y M. Rajeev_, Addison-Wesley, 3a. Edición, 2007.6. **Introduction to the Theory of Computation**, _Michael Sipser_, Cengage Learning, ISBN-10: 113318779X, 2012.7. **Teoría de la Computación: Lenguajes Formales, Autómatas y Complejidad**, _Brookshear J. G._, Addison-Wesley, 1993.
+1. **Fundamentals of the Theory of Computation**, _R. Greenlaw, H. J. Hoover, Morgan Kaufmann_, Publishers, 1998.
+2. **Lenguajes Formales y Teoría de la Computación**, _Martin C. John_, McGrawHill, 3a. Edición. 2011.
+3. **Matemática Discreta y sus Aplicaciones**, _Rosen H. Kenneth_, McGrawHill, 5a. Edición. 2012.
+4. **Formal Development of Programs and Proofs**, _E. W. Dijkstra_ (editor), Addison-Wesley Publishing Company, 1990.
+5. **Teoría de Autómatas: Lenguajes y Computación**, _E.Hopcroft John y M. Rajeev_, Addison-Wesley, 3a. Edición, 2007.
+6. **Introduction to the Theory of Computation**, _Michael Sipser_, Cengage Learning, ISBN-10: 113318779X, 2012.
+7. **Teoría de la Computación: Lenguajes Formales, Autómatas y Complejidad**, _Brookshear J. G._, Addison-Wesley, 1993.
